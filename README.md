@@ -1,4 +1,4 @@
-# BuvBub
+## BuvBuv
 
 A small NFT market place build on Solana. No Rust smart contracts, just using javascript clients to existing programs ( SPL token , Serum ).
 
@@ -10,6 +10,7 @@ You can also browse already uploaded assets and bid on them.
 ## Deploy your own
 
 yarn 
+
 yarn run dev
 
 ## How to use
