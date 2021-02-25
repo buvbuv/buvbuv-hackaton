@@ -1,7 +1,6 @@
 import Head from 'next/head'
-import NavBar from '../components/NavBar'
-import { WalletContext } from '../components/WalletContext'
 
+import CreateForm from './create'
 
 
 export default function Home() {
@@ -13,8 +12,9 @@ export default function Home() {
         <title>BuvBuv</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
+    
 
-      <NavBar />
+      <CreateForm/>
 
       <footer className="flex items-center justify-center w-full h-24 border-t">
         <a
