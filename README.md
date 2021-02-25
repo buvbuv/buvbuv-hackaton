@@ -10,6 +10,7 @@ You can also browse already uploaded assets and bid on them.
 ## Deploy your own
 
 yarn 
+
 yarn run dev
 
 ## How to use
