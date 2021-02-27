@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import Link from 'next/link';
 import WalletConnect from './WalletConnect';
-import WalletContext from './WalletContext'
 
 
 class NavBar extends Component
@@ -43,7 +42,7 @@ class NavBar extends Component
             </div>
 
             <div className="flex content-center p-3 pr-8">
-                <WalletConnect></WalletConnect>
+            <WalletConnect></WalletConnect>
             </div>
         </nav>
         )
