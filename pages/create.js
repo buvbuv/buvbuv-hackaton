@@ -1,18 +1,58 @@
-import React from 'react'
-import { useEffect } from 'react'
-
+import React , { useEffect } from 'react'
 import { useWallet } from "../util/wallet"
+import { mintToken } from '../util/mint'
+
+import Uppy from "@uppy/core"
+import { DragDrop } from "@uppy/react"
+import ThumbnailGenerator from "@uppy/thumbnail-generator"
+import XHRUpload from "@uppy/xhr-upload"
+
+const uppy = new Uppy({
+  meta: { type: "upFile" },
+  restrictions: {
+    maxNumberOfFiles: 3,
+    maxFileSize: 1048576 * 40,
+    allowedFileTypes: [".jpg", ".jpeg", ".png"],
+  },
+  autoProceed: true,
+})
+
+uppy.use(XHRUpload, {
+  endpoint: "/api/upload",
+  fieldName: "upFile",
+  formData: true,
+})
+
+uppy.use(ThumbnailGenerator, {
+  thumbnailWidth: 200,
+  waitForThumbnailsBeforeUpload: false,
+})
+
+uppy.on("thumbnail:generated", (file, preview) => {
+  console.log(file.name, preview)
+})
+
+uppy.on("complete", result => {
+    const url = result.successful[0].uploadURL  //???
+    console.log("successful upload", result)
+  })
+  
+uppy.on("error", error => {
+    console.error(error.stack)
+})
 
 
 export default function CreateForm ( props ) {
 
-    let tokenName = ""
-    let description = ""
+    let tokenName = React.createRef()
+    let description = React.createRef()
     let authority = React.createRef()
-    let freezeAuth = ""
+    let freezeAuth = React.createRef()
+
+    let mintButton = React.createRef()
     
     //const { wallet } = useEffect( () => useWallet() ,[])
-    const { connected, wallet } = useWallet();
+    const { connected, wallet , endpoint } = useWallet();
     const publicKey = wallet?.publicKey?.toBase58();
 
     function getWalletAddress ( event )  {
@@ -23,11 +63,20 @@ export default function CreateForm ( props ) {
     function submitFile( event ){
         event.preventDefault()
         console.log("submit file.")
+
+        
+        mintButton.current.disabled=false
     }
 
-    function mintToken ( event ){
+    async function mintit ( event ){
         event.preventDefault()
         console.log( "pk" + authority.current.value)
+        // mint token
+        const res = await mintToken( endpoint , wallet )
+
+        console.log ( ' MINTING .. ')
+        console.log( res )
+
     }
 
     return (
@@ -52,6 +101,7 @@ export default function CreateForm ( props ) {
                 <input name="name" type="text" className= "px-4  flex-auto border-b-2 mr-5  bg-transparent focus:border-gray-700 focus:border-b-4"
                 placeholder="give your asset a short name" 
                 //value={ tokenName }
+                ref = { tokenName }
                 />
 
 
@@ -65,7 +115,7 @@ export default function CreateForm ( props ) {
                 <textarea className= "px-4 flex-auto border-b-2 mr-5 h-32 bg-transparent bg-opacity-50"
                 placeholder="write a nice description. Tell us a story"
                 //value={ description }
-                 /> 
+                 ref = {description} /> 
 
             </div>
 
@@ -90,7 +140,7 @@ export default function CreateForm ( props ) {
         </form>
 
 
-        <form onSubmit={mintToken}>
+        <form>
         <div className="w-2/3 mx-auto flex flex-col justify-items-center rounded-2xl my-10  text-gray-600 overflow-hidden bg-gradient-to-r from-purple-300  to-gray-200" >
 
 
@@ -112,9 +162,9 @@ export default function CreateForm ( props ) {
                 ref={authority}/>
 
                 <button 
-                className="flex px-4"
+                className="flex self-end px-8"
                 onClick={getWalletAddress}>
-                    <img src="../public/walletIcon.svg"></img>
+                    <img src="./icons/Folder Data.png" className = "w-8 h-8"></img>
                 </button>
 
 
@@ -134,9 +184,9 @@ export default function CreateForm ( props ) {
 
 
 
-            <div className="h-10 my-2 flex self-end my-6">
+            <div className="h-10 my-2 flex self-end my-6" >
 
-                <button type="submit" className= "w-48 px-4 border-b-2 mr-5 bg-gray-300 rounded"> mint </button>
+                <button onClick={mintit} ref={mintButton} disabled className= "w-48 px-4 border-b-2 mr-5 bg-gray-300 rounded"> mint </button>
 
             </div>
 
