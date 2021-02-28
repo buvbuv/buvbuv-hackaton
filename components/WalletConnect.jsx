@@ -9,7 +9,7 @@ export default function WalletConnect() {
   return (
       <>
       <button onClick={connected ? wallet.disconnect : wallet.connect } 
-              className="bg-purple-500 p-3"
+              className="bg-purple-500 p-3 rounded"
       >
                 {!connected ? 'Connect wallet' : 'Disconnect'}
 

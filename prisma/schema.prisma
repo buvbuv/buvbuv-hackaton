@@ -1,0 +1,24 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model NFT {
+  id          Int    @id @default(autoincrement())
+  owner       String @unique
+  ipfs        String
+  name        String
+  discription String
+  pubkey      String
+  account     String
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  nickname String @unique
+  owner    String
+}

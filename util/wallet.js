@@ -6,11 +6,11 @@ import dynamic from 'next/dynamic'
 import Wallet from '@project-serum/sol-wallet-adapter'
 
 const WalletContext = createContext(null)
+const endpoint = new Connection(clusterApiUrl('devnet') )
 
 export function WalletProvider({ children }) {
-
-    const endpoint = new Connection(clusterApiUrl('devnet'));
-
+   
+    
     const providerUrl = 'https://www.sollet.io';
     
     const wallet = useMemo( () => new Wallet(providerUrl, endpoint) , [
@@ -18,10 +18,10 @@ export function WalletProvider({ children }) {
     ] )
   
     const [connected, setConnected] = useState(false);
-  
+      
     useEffect( async () => {
 
-      console.log('trying to connect');
+      console.log('connected : ' + connected );
 
       wallet.on('connect', ( publicKey ) => {
         console.log('connected');
