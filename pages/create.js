@@ -2,56 +2,16 @@ import React , { useEffect } from 'react'
 import { useWallet } from "../util/wallet"
 import { mintToken } from '../util/mint'
 
-import Uppy from "@uppy/core"
-import { DragDrop } from "@uppy/react"
-import ThumbnailGenerator from "@uppy/thumbnail-generator"
-import XHRUpload from "@uppy/xhr-upload"
-
-const uppy = new Uppy({
-  meta: { type: "upFile" },
-  restrictions: {
-    maxNumberOfFiles: 3,
-    maxFileSize: 1048576 * 40,
-    allowedFileTypes: [".jpg", ".jpeg", ".png"],
-  },
-  autoProceed: true,
-})
-
-uppy.use(XHRUpload, {
-  endpoint: "/api/upload",
-  fieldName: "upFile",
-  formData: true,
-})
-
-uppy.use(ThumbnailGenerator, {
-  thumbnailWidth: 200,
-  waitForThumbnailsBeforeUpload: false,
-})
-
-uppy.on("thumbnail:generated", (file, preview) => {
-  console.log(file.name, preview)
-})
-
-uppy.on("complete", result => {
-    const url = result.successful[0].uploadURL  //???
-    console.log("successful upload", result)
-  })
-  
-uppy.on("error", error => {
-    console.error(error.stack)
-})
-
 
 export default function CreateForm ( props ) {
 
     let tokenName = React.createRef()
     let description = React.createRef()
+    let fileUpload = React.createRef()
     let authority = React.createRef()
     let freezeAuth = React.createRef()
-
     let mintButton = React.createRef()
     
-    //const { wallet } = useEffect( () => useWallet() ,[])
     const { connected, wallet , endpoint } = useWallet();
     const publicKey = wallet?.publicKey?.toBase58();
 
@@ -60,10 +20,27 @@ export default function CreateForm ( props ) {
         authority.current.value = publicKey
     }
 
-    function submitFile( event ){
+    async function submitFile( event ){
         event.preventDefault()
         console.log("submit file.")
 
+        console.log( tokenName.current.value )
+        console.log( description.current.value )
+        console.log( fileUpload.current.files[0].name )
+
+        const url = '/api/upload';
+        const formData = new FormData();
+        formData.append('upFile',fileUpload.current.files[0] )
+        formData.append('name',tokenName.current.value)
+        formData.append('description',description.current.value)
+        formData.append('owner',publicKey )
+
+        let res = await fetch( url , {
+            method: 'POST',
+            body : formData
+        })
+
+        console.log ( res )
         
         mintButton.current.disabled=false
     }
@@ -126,13 +103,17 @@ export default function CreateForm ( props ) {
                 <label className="w-40 gray-100 px-4 self-end text-right font-thin uppercase"> 
                 file 
                 </label>
-                <input type="file" className= "px-4  flex-auto border-b-2 mr-5" /> 
+                <input type="file" className= "px-4  flex-auto border-b-2 mr-5" 
+                ref={ fileUpload }/> 
 
             </div>
 
-            <div className="h-10 my-2 flex self-end my-6">
+            <div className="h-10 flex self-end my-6">
 
-                <button type="submit" className= "w-48 px-4 border-b-2 mr-5 bg-gray-300 rounded"> upload </button>
+                <button type="submit" className= "w-48 px-4 border-b-2 mr-5 bg-gray-300 rounded"
+                > 
+                upload 
+                </button>
 
             </div>
 
@@ -184,7 +165,7 @@ export default function CreateForm ( props ) {
 
 
 
-            <div className="h-10 my-2 flex self-end my-6" >
+            <div className="h-10 flex self-end my-6" >
 
                 <button onClick={mintit} ref={mintButton} disabled className= "w-48 px-4 border-b-2 mr-5 bg-gray-300 rounded"> mint </button>
 

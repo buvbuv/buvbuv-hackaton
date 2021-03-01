@@ -1,15 +1,23 @@
 import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 import multer from 'multer'
-import createClient from 'ipfs-http-client'
+import ipfsClient from 'ipfs-http-client'
+import fs from 'fs'
+
+export const config = {
+    api: {
+      bodyParser: false,
+    },
+  }
+  
 
 const upload = multer({ dest: './public/upload/' })
 
-function uploadIPFS ( file ){
+async function uploadIPFS ( file ){
 
-    if (!file) return {OK:false}
+    if (!file) return {OK:false, err: " no file "}
     try {
-        let i = createClient()
+        let i = ipfsClient()
         let buff = fs.readFileSync( file.path )
         //save to ipfs
         //const ipfs = await IPFS.create()
@@ -18,20 +26,22 @@ function uploadIPFS ( file ){
         //await fs.rename( file.path, 'upload/' + cid.string)
         console.info(cid)
         return {OK : true , CID : cid.string }
-    } catch {
-        return {OK: false }
+    } catch (ex) {
+        return {OK: false , err : ex } 
     }
 }
 
-export default function uploadAPI(req, res) {
+export default async function uploadAPI(req, res) {
 
-    let answ = {}
+    upload.single( 'upFile' )(req, {} ,err => {
+        
+        console.log( req.file )
+        if ( !req.file ) return null 
 
-    upload.single( 'upFile')( req, {} ,err  => {
+        let answ = uploadIPFS( req.file )
 
-        answ = uploadIPFS( upFile )
         if ( answ.OK ) {
-            prisma.NFT.create( {
+            base = prisma.NFT.create( {
                 owner :       req.owner ,
                 ipfs :        answ.CID ,
                 name :        req.name,
@@ -40,14 +50,9 @@ export default function uploadAPI(req, res) {
                 account :     null 
             })
         }
+
+        console.log ( answ )
         
     })
 
-    const result = await prisma.NFT.findUnique({
-        where: {
-          ipfs: answ.CID,
-        },
-      })
-
-    res.status(200).json( result )
   }
